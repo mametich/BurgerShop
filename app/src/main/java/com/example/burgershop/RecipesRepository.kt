@@ -93,13 +93,44 @@ class RecipesRepository(
         return recipesDao.getRecipesById(categoryId)
     }
 
-
     private suspend fun getRecipesByIdFromApi(categoryId: Int): List<Recipe> {
         return withContext(Dispatchers.IO) {
             try {
                 val recipesCall = serviceApi.getRecipesById(categoryId)
                 val recipesResponse = recipesCall.execute()
                 if (recipesResponse.isSuccessful && recipesResponse.body() != null) {
+                    recipesResponse.body() ?: emptyList()
+                } else {
+                    emptyList()
+                }
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+
+
+    suspend fun getRecipesByFavorites(isFavorites: Boolean) : List<Recipe> {
+        return recipesDao.getFavoritesRecipes(isFavorites)
+    }
+
+    suspend fun updateRecipe(recipe: Recipe) {
+        recipesDao.updateRecipe(recipe)
+    }
+
+    suspend fun addRecipes(recipes: List<Recipe>) {
+        recipesDao.addRecipes(recipes)
+    }
+
+
+
+    suspend fun getRecipesByIds(ids: String): List<Recipe> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val recipesCall = serviceApi.getRecipesByIds(ids)
+                val recipesResponse = recipesCall.execute()
+                if (recipesResponse.isSuccessful && recipesResponse.body()?.isNotEmpty() == true) {
                     recipesResponse.body() ?: emptyList()
                 } else {
                     emptyList()
@@ -138,22 +169,6 @@ class RecipesRepository(
                 }
             } catch (e: Exception) {
                 null
-            }
-        }
-    }
-
-    suspend fun getRecipesByIds(ids: String): List<Recipe> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val recipesCall = serviceApi.getRecipesByIds(ids)
-                val recipesResponse = recipesCall.execute()
-                if (recipesResponse.isSuccessful && recipesResponse.body()?.isNotEmpty() == true) {
-                    recipesResponse.body() ?: emptyList()
-                } else {
-                    emptyList()
-                }
-            } catch (e: Exception) {
-                emptyList()
             }
         }
     }
